@@ -392,6 +392,12 @@ class Dataset(HLObject):
         self._dcpl.get_fill_value(arr)
         return arr[0]
 
+    @property
+    @with_phil
+    def store(self):
+        """File location information of dataset's data"""
+        return self.id.get_store_info()
+
     @with_phil
     def __init__(self, bind):
         """ Create a new Dataset object by binding to a low-level DatasetID.
