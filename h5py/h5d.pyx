@@ -59,7 +59,8 @@ IF HDF5_VERSION >= VDS_MIN_HDF5_VERSION:
 IF HDF5_VERSION >= (1, 10, 5):
 
     cdef class StoreInfo:
-        """Represent storage information of one chunk or contiguous dataset.
+        """Represent storage information of one dataset chunk or contiguous
+        dataset.
 
         Feature requires: 1.10.5 HDF5
         """
@@ -77,13 +78,13 @@ IF HDF5_VERSION >= (1, 10, 5):
             def __get__(self):
                 """Index of written chunk.
 
-                The None value indicates the index is not applicable.
+                The None value indicates the index is not applicable/available.
                 """
                 return self.index
 
         property filter_mask:
             def __get__(self):
-                """Mask providing a record of which filters are used.
+                """Filter mask providing a record of which filters are used.
 
                 The default value of the mask is zero (0), indicating that
                 all enabled filters are applied. A filter is skipped if the
@@ -94,9 +95,9 @@ IF HDF5_VERSION >= (1, 10, 5):
 
         property file_offset:
             def __get__(self):
-                """File offset of the chunk or contiguous dataset.
+                """File offset of the dataset chunk or contiguous dataset.
 
-                Returns None if a chunk is not written or empty dataset.
+                Returns None if the chunk is not written or empty dataset.
                 """
                 if self.byte_offset == HADDR_UNDEF:
                     return None
@@ -104,15 +105,15 @@ IF HDF5_VERSION >= (1, 10, 5):
 
         property size:
             def __get__(self):
-                """Size of the chunk or contiguous dataset in bytes."""
+                """Size of the dataset chunk or contiguous dataset in bytes."""
                 return self.size
 
         property chunk_offset:
             def __get__(self):
-                """Offset of the chunk.
+                """Offset of the chunk or array index of the first
+                element for contiguous datasets.
 
-                For contiguous datasets: array index of the first
-                element.
+                Returns None if the chunk is not written or empty dataset.
                 """
                 if self.byte_offset == HADDR_UNDEF:
                     return None
