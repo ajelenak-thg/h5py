@@ -21,6 +21,7 @@ class TestStoreInfo(TestCase):
                                         maxshape=(None, None))
         self.data['cont'] = np.random.randint(10, size=(7, 11, 4))
         self.f.create_dataset('cont', data=self.data['cont'])
+        self.f.create_dataset('cont_nodata', shape=(19, 67))
         self.f.create_dataset('chunked_nodata', shape=(10, 20), chunks=(5, 4),
                               dtype='i4')
         self.f.create_dataset('empty', dtype=h5py.Empty('f'))
@@ -63,8 +64,7 @@ class TestStoreInfo(TestCase):
         self.assertIsInstance(s, h5py.h5d.StoreInfo)
         self.assertIsNotNone(s.file_offset)
         self.assertNotEqual(s.file_offset, 0)
-        chunk = dset.chunks
-        self.assertEqual(s.size, chunk[0] * chunk[1] * dset.dtype.itemsize)
+        self.assertEqual(s.size, np.prod(dset.chunks) * dset.dtype.itemsize)
         self.assertEqual(s.chunk_offset, self.chunk_offsets[idx])
 
     def test_chunked_out_index(self):
@@ -123,8 +123,23 @@ class TestStoreInfo(TestCase):
         data = np.frombuffer(buf, dset.dtype)
         self.assertArrayEqual(data.reshape(dset.shape), self.data['cont'])
 
+    def test_contiguous_nodata(self):
+        """Contiguous dataset without data store information"""
+        dset = self.f['/cont_nodata']
+        self.assertIsNone(dset.chunks)
+        s = dset.store
+        self.assertIsInstance(s, list)
+        self.assertEqual(len(s), 0)
+
     def test_chunked_nodata(self):
-        """Chunked dataset without data"""
+        """Chunked dataset without data store information"""
+        dset = self.f['/chunked_nodata']
+        s = dset.store
+        self.assertIsInstance(s, list)
+        self.assertEqual(len(s), 0)
+
+    def test_chunked_nodata_index(self):
+        """Chunked dataset without data store information using chunk index"""
         dset = self.f['/chunked_nodata']
         self.assertEqual(0, dset.id.get_num_chunks())
         s = dset.id.get_chunk_info(0)
@@ -135,7 +150,7 @@ class TestStoreInfo(TestCase):
         self.assertIsNone(s.chunk_offset)
 
     def test_chunked_nodata_coord(self):
-        """ Store information for unwritten chunks """
+        """ Store information for unwritten chunks using chunk offset """
         dset = self.f['/chunked_nodata']
         s = dset.id.get_chunk_info_by_coord((0, 0))
         self.assertIsInstance(s, h5py.h5d.StoreInfo)
