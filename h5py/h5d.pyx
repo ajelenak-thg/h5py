@@ -613,9 +613,12 @@ cdef class DatasetID(ObjectID):
 
                 rank = H5Sget_simple_extent_ndims(space_id)
                 if H5Pget_layout(H5Dget_create_plist(self.id)) == H5D_CONTIGUOUS:
+                    byte_offset = H5Dget_offset(self.id)
+                    if byte_offset == HADDR_UNDEF:
+                        return si_list
                     si = StoreInfo()
                     si.index = None
-                    si.byte_offset = H5Dget_offset(self.id)
+                    si.byte_offset = byte_offset
                     si.size = H5Dget_storage_size(self.id)
                     si.filter_mask = 0
                     si.chunk_offset = (0,) * rank
