@@ -629,6 +629,7 @@ cdef class DatasetID(ObjectID):
                     return si_list
 
                 chunk_offset = <hsize_t*>emalloc(sizeof(hsize_t) * rank)
+                si_list = [None] * num_chunks
                 for index in range(num_chunks):
                     H5Dget_chunk_info(self.id, space_id, index, chunk_offset,
                                       &filter_mask, &byte_offset, &size)
@@ -638,7 +639,7 @@ cdef class DatasetID(ObjectID):
                     si.size = size
                     si.chunk_offset = convert_dims(chunk_offset, <hsize_t>rank)
                     si.filter_mask = filter_mask
-                    si_list.append(si)
+                    si_list[index] = si
 
                 return si_list
 
