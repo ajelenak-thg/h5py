@@ -19,12 +19,16 @@
 
 from __future__ import absolute_import
 
-import collections
 import numpy as np
 import os
 import os.path
 import sys
 from tempfile import mkdtemp
+
+try:
+    from collections.abc import MutableMapping
+except ImportError:  # Python < 3.3
+    from collections import MutableMapping
 
 import six
 
@@ -228,8 +232,7 @@ class TestOpen(BaseGroup):
         """
         g = self.f.create_group('test')
 
-        rtype = h5py.special_dtype(ref=h5py.Reference)
-        dt = np.dtype([('a', 'i'),('b',rtype)])
+        dt = np.dtype([('a', 'i'),('b', h5py.ref_dtype)])
         dset = self.f.create_dataset('test_dset', (1,), dt)
 
         dset[0] =(42,g.ref)
@@ -1067,9 +1070,9 @@ class TestMutableMapping(BaseGroup):
     behaves as expected
     '''
     def test_resolution(self):
-        assert issubclass(Group, collections.MutableMapping)
+        assert issubclass(Group, MutableMapping)
         grp = self.f.create_group("K")
-        assert isinstance(grp, collections.MutableMapping)
+        assert isinstance(grp, MutableMapping)
 
     def test_validity(self):
         '''
